@@ -1,17 +1,47 @@
-# kobo-dynamic-screensaver
+# Kobo Dynamic Screensaver
 
-A dynamic sleep screen for Kobo e-readers: your own background image, with the
-current book's title, reading percentage, a progress bar, and lifetime book
-counts drawn on top. Refreshes itself as you read.
-
-**One static ARM binary. No Python, no interpreter, no runtime dependencies.**
-No KOReader. No patched firmware. Nickel is untouched.
+A dynamic sleep screen for Kobo e-readers: your own background image, with the current book's title, reading percentage, a progress bar and lifetime book counts drawn on top. It refreshes itself as you read.
 
 ![preview](preview.png)
 
+I built this for my girlfriend. She wanted a sleep screen that was more than a static cover: a custom background she picked, the cover of the book she is reading, and up-to-date stats. Kobo doesn't offer that, so this project makes it possible without touching the device's firmware.
+
+**One static ARM binary. No Python, no interpreter, no runtime dependencies.** No KOReader, no patched firmware, and Nickel (Kobo's reader software) is left untouched.
+
+## Highlights
+
+- Custom background or the current book's cover, with an optional hand-drawn frame around it.
+- Title, author, percentage read, progress bar, reading time and time left, books finished and books on the device. Each can be switched on or off in `config.ini`.
+- Watches the library database and re-renders as you read, throttled to protect the flash storage.
+- Daily integrity-checked backups of the Kobo library database, with a restore script.
+- Written in Go and cross-compiled to a single ~7 MB static ARM binary with no C toolchain.
+
+## Tech stack
+
+- Go, with pure-Go SQLite (`modernc.org/sqlite`) and image/font rendering (`golang.org/x/image`)
+- KFMon to start the watcher from a tile in the library, and optionally NickelMenu
+- Shell scripts for building, installing and restoring
+
+## How to run
+
+**Requirements:** Go, a Kobo e-reader, and [KFMon](https://www.mobileread.com/forums/showthread.php?t=274231) installed on it.
+
+```bash
+git clone https://github.com/verkerkaidan/kobo-dynamic-screensaver.git
+cd kobo-dynamic-screensaver
+# put your background image at assets/background.png
+./build.sh
+```
+
+Then copy the contents of `dist/` to the root of the Kobo's USB drive, reboot it, and tap the **kobo-screensaver** tile in the library. The [Install](#install) section below has the exact steps, including the one Kobo setting that has to be switched on, and `GETTING-STARTED.md` walks through it from a brand new device.
+
+To try the renderer on your computer without a Kobo, see `preview.sh`.
+
 ---
 
-## How it works
+## Technical details
+
+### How it works
 
 Nickel is Kobo's reader app. It is closed source and firmware-signed — it
 cannot be forked. So this sits alongside it instead:
